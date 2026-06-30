@@ -91,7 +91,7 @@ def teacher_process(task_queue, feedback_queue):
                 # Advantage: actual_reward - predicted reward
                 # Generator Output Mean: task.mean()
                 # Reward Variance: variance of reward over last 5 steps
-                print(f"Advantage: {(actual_reward_tensor - predicted_reward):5.2f} | GOM: {task.mean():5.2f} | Reward Variance: {torch.var(rewards[-5:]):5.2f}", 
+                print(f"Advantage: {(actual_reward_tensor - predicted_reward.detach()).item():5.2f} | GOM: {task.mean().item():5.2f} | Reward Variance: {torch.var(rewards[-5:]).item():5.2f}", 
                       )
 
 
