@@ -31,6 +31,8 @@ def teacher_process(task_queue, feedback_queue):
     
     gen_opt = optim.Adam(generator.parameters(), lr=0.01)
     probe_opt = optim.Adam(probe.parameters(), lr=0.05)
+
+    rewards = []
     
     for step in range(100): # Increased steps to let the probe learn
         gen_opt.zero_grad()
@@ -51,6 +53,7 @@ def teacher_process(task_queue, feedback_queue):
         # Wait for Bob's actual evaluation
         actual_reward = feedback_queue.get()
         actual_reward_tensor = torch.tensor([actual_reward], device=device, dtype=torch.float32)
+        rewards.append(actual_reward)
         
         # ==========================================
         # TODO 2: Calculate Probe Loss
@@ -61,9 +64,10 @@ def teacher_process(task_queue, feedback_queue):
         # ==========================================
         # TODO 3: Calculate Generator Loss
         # Use dummy REINFORCE, but subtract the predicted_reward from the actual_reward 
-        # to act as an advantage baseline. (Remember to detach the prediction!)
+        # to act as an advantage baseline.
         # ==========================================
-        gen_loss = - (actual_reward_tensor - predicted_reward) * task.mean()
+        # Detached prediction because the prediction of the probe should not affect the generator
+        gen_loss = - (actual_reward_tensor - predicted_reward.detach()) * task.mean()
         
         # ==========================================
         # TODO 4: Backpropagation 
@@ -82,6 +86,14 @@ def teacher_process(task_queue, feedback_queue):
             
             if step % 5 == 0:
                 print(f"Step {step:02d} | Actual: {actual_reward:5.2f} | Pred: {predicted_reward.item():5.2f} | Probe Loss: {probe_loss.item():5.2f}")
+                
+                # Log more metrics
+                # Advantage: actual_reward - predicted reward
+                # Generator Output Mean: task.mean()
+                # Reward Variance: variance of reward over last 5 steps
+                print(f"Advantage: {(actual_reward_tensor - predicted_reward):5.2f} | GOM: {task.mean():5.2f} | Reward Variance: {torch.var(rewards[-5:]):5.2f}", 
+                      )
+
 
     task_queue.put("DONE")
     print("[Teacher] Finished training. Shutting down.")
