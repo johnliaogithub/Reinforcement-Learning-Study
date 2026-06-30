@@ -72,10 +72,8 @@ def teacher_process(task_queue, feedback_queue):
         # ==========================================
         # Call backward on probe_loss here
         probe_loss.backward(retain_graph=True)
-        probe_opt.optimize()
         # Call backward on gen_loss here
         gen_loss.backward()
-        gen_opt.optimize()
         
         # Guard clause to prevent crashing before TODOs are filled
         if probe_loss is not None and gen_loss is not None:
