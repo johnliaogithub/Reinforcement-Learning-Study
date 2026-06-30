@@ -37,7 +37,7 @@ def teacher_process(task_queue, feedback_queue, num_tasks_to_generate):
         # ==========================================
         # TODO 1: Put the task_payload into the task_queue
         # ==========================================
-        task_queue.put(task)
+        task_queue.put(task_payload)
         
         # ==========================================
         # TODO 2: Block and wait for reward from feedback_queue.
